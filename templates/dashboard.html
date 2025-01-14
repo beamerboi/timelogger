@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - TimeLogger{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Current Tasks Section -->
+    <div class="mb-8">
+        <h2 class="text-2xl font-bold mb-4">Current Tasks</h2>
+        <div class="bg-white shadow overflow-hidden rounded-lg">
+            {% if tickets %}
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Key</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Summary</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for ticket in tickets %}
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">
+                            <a href="{{ Config.JIRA_SERVER }}/browse/{{ ticket.key }}" target="_blank">{{ ticket.key }}</a>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-900">{{ ticket.fields.summary }}</td>
+                        <td class="px-6 py-4 text-sm text-gray-500">{{ ticket.fields.status.name }}</td>
+                        <td class="px-6 py-4 text-sm">
+                            <a href="{{ url_for('main.log_time', ticket=ticket.key) }}"
+                               class="text-indigo-600 hover:text-indigo-900">Log Time</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="p-4 text-center text-gray-500">
+                No active tasks found.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Recent Time Logs Section -->
+    <div>
+        <h2 class="text-2xl font-bold mb-4">Recent Time Logs</h2>
+        <div class="bg-white shadow overflow-hidden rounded-lg">
+            {% if recent_logs %}
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ticket</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hours</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Work Completed</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for log in recent_logs %}
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ log.date.strftime('%Y-%m-%d') }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">
+                            <a href="{{ Config.JIRA_SERVER }}/browse/{{ log.jira_ticket }}" target="_blank">
+                                {{ log.jira_ticket }}
+                            </a>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ log.hours_spent }}h
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-900">
+                            {{ log.work_completed[:100] }}{% if log.work_completed|length > 100 %}...{% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="p-4 text-center text-gray-500">
+                No recent time logs found.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
