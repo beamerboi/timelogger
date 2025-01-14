@@ -4,7 +4,6 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 from jira import JIRA
 from jira.exceptions import JIRAError
 from flask import current_app
-from config.config import Config
 from datetime import datetime
 
 class JiraService:
@@ -13,17 +12,17 @@ class JiraService:
         print("JIRA SERVICE INITIALIZATION STARTED")
         print("=" * 80)
         print(f"Time: {datetime.now()}")
-        print(f"Server URL: {Config.JIRA_SERVER}")
-        print(f"Auth Email: {Config.JIRA_EMAIL}")
+        print(f"Server URL: {current_app.config['JIRA_SERVER']}")
+        print(f"Auth Email: {current_app.config['JIRA_EMAIL']}")
 
         try:
             print("\nCreating JIRA client...")
             self.jira = JIRA(
-                options={
-                    'server': Config.JIRA_SERVER,
-                    'verify': False
-                },
-                basic_auth=(Config.JIRA_EMAIL, Config.JIRA_API_TOKEN)
+                server=current_app.config['JIRA_SERVER'],
+                basic_auth=(
+                    current_app.config['JIRA_EMAIL'],
+                    current_app.config['JIRA_API_TOKEN']
+                )
             )
             print("✓ JIRA client created successfully")
         except Exception as e:
