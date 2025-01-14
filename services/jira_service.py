@@ -1,3 +1,6 @@
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 from jira import JIRA
 from jira.exceptions import JIRAError
 from flask import current_app

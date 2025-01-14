@@ -3,79 +3,59 @@ from flask_login import login_required, current_user
 from models.time_log import TimeLog
 from services.jira_service import JiraService
 from config.config import Config
-from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
+from extensions import db
+from datetime import datetime, timedelta
 
 main_bp = Blueprint('main', __name__)
-db = SQLAlchemy()
 
 @main_bp.route('/')
 @login_required
 def dashboard():
-    print("\n" + "#" * 80)
-    print("DASHBOARD ROUTE ACCESSED")
-    print("#" * 80)
-    print(f"Current User: {current_user.email}")
-    print(f"Current Time: {datetime.now()}")
+    jira_service = JiraService()
+    tickets = jira_service.get_current_sprint_tickets(current_user.email)
 
-    # Debug print for config
-    print("\nJIRA CONFIG:")
-    print(f"JIRA_SERVER: {Config.JIRA_SERVER}")
-    print(f"JIRA_EMAIL: {Config.JIRA_EMAIL}")
-    print(f"JIRA_API_TOKEN exists: {'Yes' if Config.JIRA_API_TOKEN else 'No'}")
+    # Get today's date
+    today = datetime.now().date()
+    week_start = today - timedelta(days=today.weekday())
 
-    try:
-        print("\nINITIALIZING JIRA SERVICE...")
-        jira_service = JiraService()
+    # Calculate stats
+    today_logs = TimeLog.query.filter(
+        TimeLog.user_id == current_user.id,
+        TimeLog.date == today
+    ).all()
 
-        if not jira_service.jira:
-            print("ERROR: Jira client was not initialized!")
-            flash("Failed to initialize Jira client.", "error")
-            return render_template('dashboard.html',
-                                tickets=[],
-                                recent_logs=[],
-                                Config=Config)
+    weekly_logs = TimeLog.query.filter(
+        TimeLog.user_id == current_user.id,
+        TimeLog.date >= week_start,
+        TimeLog.date <= today
+    ).all()
 
-        print("\nTESTING JIRA CONNECTION...")
-        if not jira_service.test_connection():
-            print("ERROR: Jira connection test failed!")
-            flash("Unable to connect to Jira.", "error")
-            return render_template('dashboard.html',
-                                tickets=[],
-                                recent_logs=[],
-                                Config=Config)
+    completed_tasks = len(set(log.jira_ticket for log in weekly_logs))
+    today_hours = sum(log.hours_spent for log in today_logs)
+    weekly_hours = sum(log.hours_spent for log in weekly_logs)
 
-        print("\nFETCHING TICKETS...")
-        current_tickets = jira_service.get_current_sprint_tickets(current_user.email)
-        print(f"Retrieved {len(current_tickets) if current_tickets else 0} tickets")
-
-    except Exception as e:
-        import traceback
-        print("\nERROR IN DASHBOARD ROUTE:")
-        print(traceback.format_exc())
-        flash("An error occurred while fetching Jira data.", "error")
-        return render_template('dashboard.html',
-                            tickets=[],
-                            recent_logs=[],
-                            Config=Config)
-
-    print("\nFETCHING RECENT LOGS...")
     recent_logs = TimeLog.query.filter_by(user_id=current_user.id)\
-        .order_by(TimeLog.created_at.desc())\
-        .limit(5)
-
-    print("\nRENDERING TEMPLATE...")
-    print("#" * 80 + "\n")
+        .order_by(TimeLog.date.desc())\
+        .limit(10)\
+        .all()
 
     return render_template('dashboard.html',
-                         tickets=current_tickets,
+                         tickets=tickets,
                          recent_logs=recent_logs,
-                         Config=Config)
+                         today_hours=today_hours,
+                         weekly_hours=weekly_hours,
+                         completed_tasks=completed_tasks,
+                         jira_server=Config.JIRA_SERVER)
 
 @main_bp.route('/log-time', methods=['GET', 'POST'])
 @login_required
 def log_time():
+    # Get current tickets for dropdown
+    jira_service = JiraService()
+    current_tickets = jira_service.get_current_sprint_tickets(current_user.email)
+
     if request.method == 'POST':
+        # Create the time log instance
         time_log = TimeLog(
             user_id=current_user.id,
             jira_ticket=request.form['jira_ticket'],
@@ -85,23 +65,26 @@ def log_time():
             hours_spent=float(request.form['hours_spent'])
         )
 
-        db.session.add(time_log)
+        try:
+            # Log work in Jira first
+            comment = f"""Work Completed: {time_log.work_completed}
+            Issues Faced: {time_log.issues_faced}
+            Next Steps: {time_log.next_steps}"""
 
-        # Log work in Jira
-        jira_service = JiraService()
-        comment = f"""Work Completed: {time_log.work_completed}
-        Issues Faced: {time_log.issues_faced}
-        Next Steps: {time_log.next_steps}"""
+            if jira_service.log_work(time_log.jira_ticket, time_log.hours_spent, comment):
+                # If Jira logging succeeds, save to database
+                with current_app.app_context():
+                    db.session.add(time_log)
+                    db.session.commit()
+                flash('Time logged successfully!', 'success')
+                return redirect(url_for('main.dashboard'))
+            else:
+                flash('Failed to log time in Jira.', 'error')
+        except Exception as e:
+            print(f"Error logging time: {str(e)}")
+            flash('An error occurred while logging time.', 'error')
 
-        if jira_service.log_work(time_log.jira_ticket, time_log.hours_spent, comment):
-            db.session.commit()
-            flash('Time logged successfully!', 'success')
-            return redirect(url_for('main.dashboard'))
-        else:
-            db.session.rollback()
-            flash('Failed to log time in Jira.', 'error')
-
-    return render_template('time_log.html')
+    return render_template('time_log.html', tickets=current_tickets)
 
 @main_bp.route('/debug-config')
 @login_required

@@ -4,39 +4,113 @@
 
 {% block content %}
 <div class="container mx-auto px-4 py-8">
+    <!-- Stats Overview -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-white rounded-xl shadow-sm p-6 transform transition-all hover:scale-[1.02]">
+            <div class="flex items-center">
+                <div class="bg-indigo-100 rounded-lg p-3">
+                    <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-sm font-medium text-gray-500">Hours Today</h3>
+                    <p class="text-2xl font-semibold text-gray-900">{{ today_hours }}h</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm p-6 transform transition-all hover:scale-[1.02]">
+            <div class="flex items-center">
+                <div class="bg-green-100 rounded-lg p-3">
+                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-sm font-medium text-gray-500">Tasks Completed</h3>
+                    <p class="text-2xl font-semibold text-gray-900">{{ completed_tasks }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm p-6 transform transition-all hover:scale-[1.02]">
+            <div class="flex items-center">
+                <div class="bg-purple-100 rounded-lg p-3">
+                    <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-sm font-medium text-gray-500">Weekly Hours</h3>
+                    <p class="text-2xl font-semibold text-gray-900">{{ weekly_hours }}h</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Current Tasks Section -->
     <div class="mb-8">
-        <h2 class="text-2xl font-bold mb-4">Current Tasks</h2>
-        <div class="bg-white shadow overflow-hidden rounded-lg">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-2xl font-bold">Current Tasks</h2>
+            <a href="{{ url_for('main.log_time') }}"
+               class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+                Log Time
+            </a>
+        </div>
+        <div class="bg-white shadow-sm overflow-hidden rounded-xl">
             {% if tickets %}
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Key</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Summary</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    {% for ticket in tickets %}
-                    <tr>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">
-                            <a href="{{ Config.JIRA_SERVER }}/browse/{{ ticket.key }}" target="_blank">{{ ticket.key }}</a>
-                        </td>
-                        <td class="px-6 py-4 text-sm text-gray-900">{{ ticket.fields.summary }}</td>
-                        <td class="px-6 py-4 text-sm text-gray-500">{{ ticket.fields.status.name }}</td>
-                        <td class="px-6 py-4 text-sm">
-                            <a href="{{ url_for('main.log_time', ticket=ticket.key) }}"
-                               class="text-indigo-600 hover:text-indigo-900">Log Time</a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Key</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Summary</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for ticket in tickets %}
+                        <tr class="hover:bg-gray-50 transition-colors duration-200">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">
+                                <a href="{{ jira_server }}/browse/{{ ticket.key }}" target="_blank"
+                                   class="hover:text-blue-800 transition-colors duration-200">{{ ticket.key }}</a>
+                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-900">{{ ticket.fields.summary }}</td>
+                            <td class="px-6 py-4">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                                    {% if ticket.fields.status.name == 'In Progress' %}
+                                        bg-yellow-100 text-yellow-800
+                                    {% elif ticket.fields.status.name == 'Done' %}
+                                        bg-green-100 text-green-800
+                                    {% else %}
+                                        bg-gray-100 text-gray-800
+                                    {% endif %}">
+                                    {{ ticket.fields.status.name }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-sm">
+                                <a href="{{ url_for('main.log_time', ticket=ticket.key) }}"
+                                   class="text-indigo-600 hover:text-indigo-900 font-medium transition-colors duration-200">Log Time</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
             {% else %}
-            <div class="p-4 text-center text-gray-500">
-                No active tasks found.
+            <div class="p-8 text-center">
+                <div class="text-gray-400 mb-4">
+                    <svg class="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                    </svg>
+                </div>
+                <p class="text-gray-500 text-lg">No active tasks found</p>
             </div>
             {% endif %}
         </div>
@@ -45,41 +119,50 @@
     <!-- Recent Time Logs Section -->
     <div>
         <h2 class="text-2xl font-bold mb-4">Recent Time Logs</h2>
-        <div class="bg-white shadow overflow-hidden rounded-lg">
+        <div class="bg-white shadow-sm overflow-hidden rounded-xl">
             {% if recent_logs %}
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ticket</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hours</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Work Completed</th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    {% for log in recent_logs %}
-                    <tr>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {{ log.date.strftime('%Y-%m-%d') }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">
-                            <a href="{{ Config.JIRA_SERVER }}/browse/{{ log.jira_ticket }}" target="_blank">
-                                {{ log.jira_ticket }}
-                            </a>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {{ log.hours_spent }}h
-                        </td>
-                        <td class="px-6 py-4 text-sm text-gray-900">
-                            {{ log.work_completed[:100] }}{% if log.work_completed|length > 100 %}...{% endif %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ticket</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hours</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Work Completed</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for log in recent_logs %}
+                        <tr class="hover:bg-gray-50 transition-colors duration-200">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ log.date.strftime('%Y-%m-%d') }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">
+                                <a href="{{ jira_server }}/browse/{{ log.jira_ticket }}" target="_blank"
+                                   class="hover:text-blue-800 transition-colors duration-200">
+                                    {{ log.jira_ticket }}
+                                </a>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ log.hours_spent }}h
+                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-900">
+                                {{ log.work_completed[:100] }}{% if log.work_completed|length > 100 %}...{% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
             {% else %}
-            <div class="p-4 text-center text-gray-500">
-                No recent time logs found.
+            <div class="p-8 text-center">
+                <div class="text-gray-400 mb-4">
+                    <svg class="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <p class="text-gray-500 text-lg">No recent time logs found</p>
             </div>
             {% endif %}
         </div>
