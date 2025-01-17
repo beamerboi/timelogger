@@ -12,4 +12,24 @@ services:
       - key: FLASK_APP
         value: app.py
       - key: FLASK_ENV
-        value: production 
+        value: production
+      - key: SECRET_KEY
+        generateValue: true
+      - key: MAIL_SERVER
+        value: smtp.gmail.com
+      - key: MAIL_PORT
+        value: "587"
+      - key: MAIL_USE_TLS
+        value: "True"
+      - key: MAIL_USERNAME
+        sync: false
+      - key: MAIL_PASSWORD
+        sync: false
+      - key: JIRA_SERVER
+        value: https://focus-corporation.atlassian.net
+      - key: JIRA_EMAIL
+        sync: false
+      - key: JIRA_API_TOKEN
+        sync: false
+    healthCheckPath: /
+    healthCheckTimeout: 100 
