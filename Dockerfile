@@ -19,17 +19,16 @@ RUN apt-get update \
         libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements file
-COPY requirements.txt .
+# Copy requirements and config files first
+COPY requirements.txt config.py ./
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt gunicorn
 
-# Copy project files
+# Copy the rest of the application
 COPY . .
 
 # Make start script executable
-COPY start.sh .
 RUN chmod +x start.sh
 
 # Create a non-root user

@@ -5,13 +5,14 @@ from extensions import db, login_manager, mail, migrate
 from routes.auth import auth_bp
 from routes.main import main_bp
 from models.user import User
+from config import Config
 
 def create_app():
     try:
         app = Flask(__name__)
         
         # Load configuration
-        app.config.from_object('config.Config')
+        app.config.from_object(Config)
         
         print("Configuration loaded:")
         print(f"DATABASE_URL: {app.config.get('SQLALCHEMY_DATABASE_URI', 'Not set')}")
