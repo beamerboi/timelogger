@@ -1,5 +1,5 @@
-# Use Python 3.9 as base image
-FROM python:3.9-slim
+# Use Python 3.11 slim image as base
+FROM python:3.11-slim
 
 # Set working directory
 WORKDIR /app
@@ -8,38 +8,31 @@ WORKDIR /app
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 ENV FLASK_APP=app.py
-ENV FLASK_ENV=production
 
 # Install system dependencies
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-        postgresql-client \
         gcc \
-        python3-dev \
+        postgresql-client \
         libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements and config files first
-COPY requirements.txt config.py ./
+# Copy requirements first to leverage Docker cache
+COPY requirements.txt .
 
 # Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt gunicorn
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of the application
 COPY . .
 
-# Make start script executable
-RUN chmod +x start.sh
-
-# Create a non-root user
-RUN useradd -m appuser && chown -R appuser:appuser /app
-USER appuser
-
-# Initialize database
-RUN flask db upgrade || echo "No migrations to run"
+# Create a non-root user and switch to it
+RUN useradd -m myuser
+RUN chown -R myuser:myuser /app
+USER myuser
 
 # Expose port
 EXPOSE 8000
 
-# Run gunicorn
-CMD ["./start.sh"] 
+# Run Gunicorn
+CMD gunicorn --bind 0.0.0.0:8000 "app:create_app()" 
