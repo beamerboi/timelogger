@@ -3,7 +3,7 @@ services:
     name: timelogger
     env: python
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app:app
+    startCommand: gunicorn --bind 0.0.0.0:$PORT --workers 4 --timeout 120 app:app
     envVars:
       - key: PYTHON_VERSION
         value: 3.9.0
@@ -12,4 +12,6 @@ services:
       - key: FLASK_APP
         value: app.py
       - key: FLASK_ENV
-        value: production 
+        value: production
+      - key: PORT
+        value: "10000" 

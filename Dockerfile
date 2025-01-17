@@ -23,7 +23,7 @@ RUN apt-get update \
 COPY requirements.txt .
 
 # Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt gunicorn
 
 # Copy project files
 COPY . .
@@ -36,4 +36,4 @@ USER appuser
 EXPOSE 8000
 
 # Run gunicorn
-CMD gunicorn --bind 0.0.0.0:$PORT app:app 
+CMD ["gunicorn", "--bind", "0.0.0.0:$PORT", "--workers", "4", "--timeout", "120", "app:app"] 
