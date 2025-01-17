@@ -1,29 +1,30 @@
+import os
 from flask import Flask
-from config.config import Config
-from extensions import db, login_manager, mail
+from extensions import db, login_manager, mail, migrate
 from routes.auth import auth_bp
 from routes.main import main_bp
-from flask_migrate import Migrate
+from models.user import User
 
-def create_app(config_class=Config):
+def create_app():
     app = Flask(__name__)
-    app.config.from_object(config_class)
-
+    
+    # Load configuration
+    app.config.from_object('config.Config')
+    
     # Initialize extensions
     db.init_app(app)
     login_manager.init_app(app)
     mail.init_app(app)
-
-    # Initialize Flask-Migrate
-    Migrate(app, db)
-
+    migrate.init_app(app, db)
+    
     # Register blueprints
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
-
+    
     return app
 
 app = create_app()
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get('PORT', 8000))
+    app.run(host='0.0.0.0', port=port)
