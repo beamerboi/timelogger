@@ -11,4 +11,5 @@ services:
       - FLASK_APP=app.py
       - FLASK_ENV=production
     env_file:
-      - .env 
+      - .env
+    command: ./start.sh 

@@ -28,6 +28,10 @@ RUN pip install --no-cache-dir -r requirements.txt gunicorn
 # Copy project files
 COPY . .
 
+# Make start script executable
+COPY start.sh .
+RUN chmod +x start.sh
+
 # Create a non-root user
 RUN useradd -m appuser && chown -R appuser:appuser /app
 USER appuser
@@ -36,4 +40,4 @@ USER appuser
 EXPOSE 8000
 
 # Run gunicorn
-CMD ["gunicorn", "--bind", "0.0.0.0:$PORT", "--workers", "4", "--timeout", "120", "app:app"] 
+CMD ["./start.sh"] 
