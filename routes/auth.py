@@ -97,23 +97,33 @@ def register():
         user.set_password(password)
 
         try:
+            # First save the user
             db.session.add(user)
             db.session.commit()
 
-            # Send verification email
+            # Generate and send verification email in a separate transaction
             try:
-                EmailService.send_verification_email(user)
+                # Create a new session to ensure token is stored
+                db.session.begin_nested()
+                
+                if not EmailService.send_verification_email(user):
+                    db.session.rollback()
+                    flash('Account created but verification email could not be sent. Please use the resend verification option.')
+                else:
+                    db.session.commit()
+                    flash('Registration successful! Please check your email to verify your account.')
+                
+                return redirect(url_for('auth.login'))
+                
             except Exception as mail_error:
-                print(f"Email error: {str(mail_error)}")  # Log email error
-                # Even if email fails, we want to keep the user registered
-                flash('Account created but verification email could not be sent. Please contact support.')
+                db.session.rollback()
+                print(f"Email error: {str(mail_error)}")
+                flash('Account created but verification email could not be sent. Please use the resend verification option.')
                 return redirect(url_for('auth.login'))
 
-            flash('Registration successful! Please check your email to verify your account.')
-            return redirect(url_for('auth.login'))
         except Exception as e:
             db.session.rollback()
-            print(f"Registration error: {str(e)}")  # Log the actual error
+            print(f"Registration error: {str(e)}")
             flash('An error occurred during registration. Please try again.')
             return render_template('auth/register.html')
 
@@ -121,23 +131,59 @@ def register():
 
 @auth_bp.route('/verify-email/<token>')
 def verify_email(token):
-    user = User.query.filter_by(verification_token=token).first()
-
-    if not user:
-        flash('Invalid verification link.')
+    print(f"\n=== VERIFYING EMAIL ===")
+    print(f"Token received: {token}")
+    
+    if not token:
+        print("No token provided")
+        flash('Invalid verification link.', 'error')
         return redirect(url_for('auth.login'))
 
-    if user.verification_token_expires < datetime.utcnow():
-        flash('The verification link has expired. Please request a new one.')
+    user = User.query.filter_by(verification_token=token).first()
+    print(f"User found: {user is not None}")
+    
+    if not user:
+        print("No user found with this token")
+        flash('Invalid verification link or account already verified.', 'error')
         return redirect(url_for('auth.login'))
 
     try:
-        user.verify_email()
-        db.session.commit()
-        flash('Your email has been verified! You can now log in.')
+        if user.verify_email():
+            db.session.commit()
+            print("Email verified successfully")
+            login_user(user)  # Automatically log in the user
+            return render_template('auth/verification_success.html', user=user)
+        else:
+            print("Verification failed - token expired or invalid")
+            flash('Verification link has expired. Please request a new one.', 'error')
+            return redirect(url_for('auth.login'))
     except Exception as e:
         db.session.rollback()
-        flash('An error occurred during verification. Please try again.')
+        print(f"Error during verification: {e}")
+        flash('An error occurred during verification. Please try again.', 'error')
+        return redirect(url_for('auth.login'))
+
+@auth_bp.route('/resend-verification')
+def resend_verification():
+    """Add this new route to handle resending verification emails"""
+    email = request.args.get('email')
+    if not email:
+        flash('Email address is required.', 'error')
+        return redirect(url_for('auth.login'))
+
+    user = User.query.filter_by(email=email, is_verified=False).first()
+    if not user:
+        flash('Invalid email or account already verified.', 'error')
+        return redirect(url_for('auth.login'))
+
+    try:
+        if EmailService.send_verification_email(user):
+            flash('Verification email has been resent. Please check your inbox.', 'success')
+        else:
+            flash('Failed to send verification email. Please try again.', 'error')
+    except Exception as e:
+        print(f"Error resending verification: {e}")
+        flash('An error occurred. Please try again later.', 'error')
 
     return redirect(url_for('auth.login'))
 

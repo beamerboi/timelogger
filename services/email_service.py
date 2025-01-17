@@ -6,6 +6,8 @@ class EmailService:
     @staticmethod
     def send_verification_email(user):
         token = user.generate_verification_token()
+        if not token:
+            raise Exception("Failed to generate verification token")
 
         # Get the current host
         host = request.host_url.rstrip('/')
@@ -18,7 +20,12 @@ class EmailService:
                                  user=user,
                                  verification_url=verification_url)
 
-        mail.send(msg)
+        try:
+            mail.send(msg)
+            return True
+        except Exception as e:
+            print(f"Failed to send verification email: {e}")
+            return False
 
     @staticmethod
     def send_reminder(user_email, pending_tickets):

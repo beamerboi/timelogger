@@ -1,8 +1,8 @@
-"""Initial migration with larger password hash
+"""empty message
 
-Revision ID: 19ca46df9054
+Revision ID: ad10b43e9ad2
 Revises: 
-Create Date: 2025-01-13 23:52:55.296242
+Create Date: 2025-01-17 09:28:54.896492
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '19ca46df9054'
+revision = 'ad10b43e9ad2'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -21,11 +21,15 @@ def upgrade():
     op.create_table('user',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('email', sa.String(length=120), nullable=False),
-    sa.Column('password_hash', sa.String(length=256), nullable=True),
+    sa.Column('password_hash', sa.String(length=255), nullable=True),
     sa.Column('name', sa.String(length=100), nullable=True),
     sa.Column('is_admin', sa.Boolean(), nullable=True),
+    sa.Column('is_verified', sa.Boolean(), nullable=True),
+    sa.Column('verification_token', sa.String(length=100), nullable=True),
+    sa.Column('verification_token_expires', sa.DateTime(), nullable=True),
     sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('email')
+    sa.UniqueConstraint('email'),
+    sa.UniqueConstraint('verification_token')
     )
     op.create_table('time_log',
     sa.Column('id', sa.Integer(), nullable=False),
