@@ -30,8 +30,12 @@ def create_app():
         
         # Create tables if they don't exist
         with app.app_context():
-            db.create_all()
-            print("Database tables created successfully")
+            try:
+                db.create_all()
+                print("Database tables created successfully")
+            except Exception as e:
+                print(f"Error creating database tables: {str(e)}", file=sys.stderr)
+                raise
         
         return app
     except Exception as e:

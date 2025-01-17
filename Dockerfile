@@ -36,6 +36,9 @@ RUN chmod +x start.sh
 RUN useradd -m appuser && chown -R appuser:appuser /app
 USER appuser
 
+# Initialize database
+RUN flask db upgrade || echo "No migrations to run"
+
 # Expose port
 EXPOSE 8000
 
