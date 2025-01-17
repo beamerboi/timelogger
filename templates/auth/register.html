@@ -10,112 +10,46 @@
                 Create your account
             </h2>
         </div>
-        <form class="mt-8 space-y-6" action="{{ url_for('auth.register') }}" method="POST" onsubmit="return validateRegisterForm()">
-            <div class="rounded-md shadow-sm -space-y-px">
-                <div class="mb-4">
-                    <label for="name" class="sr-only">Full Name</label>
-                    <input id="name" name="name" type="text" required
-                           class="appearance-none rounded-t-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                           placeholder="Full Name"
-                           minlength="2"
-                           pattern="[A-Za-z\s]+"
-                           title="Please enter a valid name (letters and spaces only)">
-                    <span id="nameError" class="text-red-500 text-xs hidden"></span>
-                </div>
-                <div class="mb-4">
-                    <label for="email" class="sr-only">Email address</label>
-                    <input id="email" name="email" type="email" required
-                           class="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                           placeholder="Email address"
-                           pattern="[a-zA-Z0-9._%+-]+@focus-corporation\.com$"
-                           title="Please enter your focus-corporation.com email address">
-                    <span id="emailError" class="text-red-500 text-xs hidden"></span>
-                </div>
-                <div class="mb-4">
-                    <label for="password" class="sr-only">Password</label>
-                    <input id="password" name="password" type="password" required
-                           class="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                           placeholder="Password"
-                           minlength="6">
-                    <span id="passwordError" class="text-red-500 text-xs hidden"></span>
-                </div>
+        <form class="mt-8 space-y-6" action="{{ url_for('auth.register') }}" method="POST">
+            {{ form.hidden_tag() }}
+            <div class="rounded-md shadow-sm space-y-4">
                 <div>
-                    <label for="confirm_password" class="sr-only">Confirm Password</label>
-                    <input id="confirm_password" name="confirm_password" type="password" required
-                           class="appearance-none rounded-b-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                           placeholder="Confirm Password">
-                    <span id="confirmPasswordError" class="text-red-500 text-xs hidden"></span>
+                    {{ form.name.label(class="block text-sm font-medium text-gray-700 mb-1") }}
+                    {{ form.name(class="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm", placeholder="Enter your full name") }}
+                    {% for error in form.name.errors %}
+                        <span class="text-red-500 text-xs">{{ error }}</span>
+                    {% endfor %}
+                </div>
+
+                <div>
+                    {{ form.email.label(class="block text-sm font-medium text-gray-700 mb-1") }}
+                    {{ form.email(class="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm", placeholder="your.name@focus-corporation.com") }}
+                    {% for error in form.email.errors %}
+                        <span class="text-red-500 text-xs">{{ error }}</span>
+                    {% endfor %}
+                </div>
+
+                <div>
+                    {{ form.password.label(class="block text-sm font-medium text-gray-700 mb-1") }}
+                    {{ form.password(class="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm", placeholder="Enter your password") }}
+                    {% for error in form.password.errors %}
+                        <span class="text-red-500 text-xs">{{ error }}</span>
+                    {% endfor %}
+                </div>
+
+                <div>
+                    {{ form.confirm_password.label(class="block text-sm font-medium text-gray-700 mb-1") }}
+                    {{ form.confirm_password(class="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm", placeholder="Confirm your password") }}
+                    {% for error in form.confirm_password.errors %}
+                        <span class="text-red-500 text-xs">{{ error }}</span>
+                    {% endfor %}
                 </div>
             </div>
 
             <div>
-                <button type="submit"
-                        class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                    Create Account
-                </button>
-            </div>
-            <div class="text-center">
-                <a href="{{ url_for('auth.login') }}" class="text-sm text-indigo-600 hover:text-indigo-500">
-                    Already have an account? Sign in
-                </a>
+                {{ form.submit(class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500") }}
             </div>
         </form>
     </div>
 </div>
-
-<script>
-function validateRegisterForm() {
-    let isValid = true;
-    const name = document.getElementById('name');
-    const email = document.getElementById('email');
-    const password = document.getElementById('password');
-    const confirmPassword = document.getElementById('confirm_password');
-
-    // Reset all error messages
-    document.querySelectorAll('span[id$="Error"]').forEach(span => span.classList.add('hidden'));
-
-    // Name validation
-    if (name.value.length < 2 || !/^[A-Za-z\s]+$/.test(name.value)) {
-        document.getElementById('nameError').textContent = 'Please enter a valid name (at least 2 characters, letters only)';
-        document.getElementById('nameError').classList.remove('hidden');
-        isValid = false;
-    }
-
-    // Email validation
-    const emailPattern = /^[a-zA-Z0-9._%+-]+@focus-corporation\.com$/i;
-    if (!emailPattern.test(email.value)) {
-        document.getElementById('emailError').textContent = 'Please enter a valid focus-corporation.com email address';
-        document.getElementById('emailError').classList.remove('hidden');
-        isValid = false;
-    }
-
-    // Password validation
-    if (password.value.length < 6) {
-        document.getElementById('passwordError').textContent = 'Password must be at least 6 characters long';
-        document.getElementById('passwordError').classList.remove('hidden');
-        isValid = false;
-    }
-
-    // Password strength check
-    const hasUpperCase = /[A-Z]/.test(password.value);
-    const hasLowerCase = /[a-z]/.test(password.value);
-    const hasNumbers = /\d/.test(password.value);
-    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password.value);
-
-    if (!(hasUpperCase && hasLowerCase && hasNumbers && hasSpecialChar)) {
-        document.getElementById('passwordError').textContent = 'Password must contain uppercase, lowercase, numbers, and special characters';
-        document.getElementById('passwordError').classList.remove('hidden');
-        isValid = false;
-    }
-
-    // Confirm password validation
-    if (password.value !== confirmPassword.value) {
-        document.getElementById('confirmPasswordError').textContent = 'Passwords do not match';
-        document.getElementById('confirmPasswordError').classList.remove('hidden');
-        isValid = false;
-    }
-
-    return isValid;
-}
-</script>
 {% endblock %}

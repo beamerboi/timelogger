@@ -25,13 +25,13 @@ class User(UserMixin, db.Model):
         """Generate and store verification token"""
         print(f"\n=== GENERATING VERIFICATION TOKEN ===")
         print(f"User: {self.email}")
-        
+
         self.verification_token = secrets.token_urlsafe(32)
         self.verification_token_expires = datetime.utcnow() + timedelta(hours=24)
-        
+
         print(f"Generated token: {self.verification_token}")
         print(f"Expires at: {self.verification_token_expires}")
-        
+
         try:
             db.session.add(self)  # Ensure the user is in the session
             db.session.commit()
@@ -48,11 +48,11 @@ class User(UserMixin, db.Model):
         print(f"User: {self.email}")
         print(f"Current token: {self.verification_token}")
         print(f"Token expires: {self.verification_token_expires}")
-        
+
         if not self.verification_token or not self.verification_token_expires:
             print("No token or expiration date found")
             return False
-        
+
         if self.verification_token_expires < datetime.utcnow():
             print("Token has expired")
             return False
