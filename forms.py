@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField
-from wtforms.validators import DataRequired, Email, Length, EqualTo, Regexp, ValidationError
+from wtforms.validators import DataRequired, Length, EqualTo, Regexp, ValidationError
 from models.user import User
 
 class RegistrationForm(FlaskForm):
@@ -11,9 +11,10 @@ class RegistrationForm(FlaskForm):
     ])
     email = StringField('Email Address', validators=[
         DataRequired(),
-        Email(message="Invalid email format"),
-        Regexp(r'^[a-zA-Z0-9._+-]+@focus-corporation\.com$',
-               message="Email must be a valid focus-corporation.com address. Only letters, numbers, dots, plus and minus signs are allowed before @")
+        Regexp(
+            r'^[a-zA-Z0-9._+-]+@focus-corporation\.com$',
+            message="Please enter a valid focus-corporation.com email address"
+        )
     ])
     password = PasswordField('Password', validators=[
         DataRequired(),
